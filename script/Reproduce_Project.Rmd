@@ -1,0 +1,128 @@
+---
+title: "HW6_Frank_Jiang"
+author: "Frank Jiang"
+date: "11/12/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r,tidy=T}
+#6.1
+library(dplyr)
+library(tidyverse)
+Afterschool_data<- read.csv('C:/HW/HW6/AfterSchool.csv')
+#examine the data frame object
+head(Afterschool_data)
+tail(Afterschool_data)
+str(Afterschool_data)
+summary(Afterschool_data)
+```
+```{r pressure, echo=T}
+#Exploratory analysis (denisty plot)
+#for treatment group
+plot(density(Afterschool_data$Victim[Afterschool_data$Treatment==1],bw=3),
+     main=" ",xlab="Victimization Measures", bty="l",col="#377EB8",lty="solid")
+#for control group
+lines(density(Afterschool_data$Victim[Afterschool_data$Treatment==0]),
+      col="#E41A1C",lty="dashed")
+#Add legend
+legend(x = 50, y = 0.085, legend = c('Control Group', 'Treatment Group'), 
+         col = c("#E41A1C","#377EB8"), lty= c("dashed", "solid"), bty = "n") 
+```
+```{r,tidy=T}
+#Conditional Means
+conditional_means<- tapply(X=Afterschool_data$Victim,INDEX = Afterschool_data$Treatment,FUN = mean)
+#Conditional standard deviations
+conditional_sd<- tapply(X=Afterschool_data$Victim, INDEX= Afterschool_data$Treatment, FUN = sd)
+#sample sizes
+sample_sizes<- table(Afterschool_data$Treatment)
+#summary table
+summary<- rbind(conditional_means,conditional_sd,sample_sizes)
+
+#randomization
+#randomly permute the victimization measures and assign them to an object
+#called random_victim
+random_victim<- sample(Afterschool_data$Victim)
+summary(random_victim)
+#mean difference between treatment group and control group with randomized data
+mean(random_victim[1:187])-mean(random_victim[188:356])
+#repeat the randomization for p-value
+#repeat 4999 times
+victim_permuted<- replicate(n=4999, expr=sample(Afterschool_data$Victim))
+#create function to calculate the mean difference of two groups
+mean.diff <- function(data) {
+  mean(data [1:187]) - mean(data[188:356])
+}
+mean.diff(Afterschool_data$Victim)
+#calculate mean difference of each column with different groups
+diffs <- apply(X = victim_permuted, MARGIN = 2, FUN = mean.diff)
+#count groups of permuted mean difference higher than 1.3
+r<- length(diffs[abs(diffs)>= 1.3])
+#calculate Monte Carlo P-value
+p_value<- (r+1)/(4999+1)
+p_value
+```
+<p align="left">
+Write-up
+
+Three-hundred fifty-six-middle-school students were randomly assigned to participating in an after-school program(n=169), or were given 'normal' treatment(n=187), which is that they were invited to attend one after-school activity per month.The treatment group(mean=50.6,sd=10.9) have slightly higher victimization measures with larger variance than the control group(mean=49.3,sd=8.8).Based on the density plot, we can conclude that the density distribution of victimization measures for the treatment group and the control group are similar. However, there are some variation when the victimazation measures reaches from 55 to 70. A randomization test were used to determine whether if there was a statistical reliable difference in the effect of victimization between students in these two groups. A Monte Carlo P-value was computed by permuting the data 4999 times, using the correction p-value 0.225. This is weak evidence against null hypothesis of no treatment effect, and may suggest that after-school programs do not contribute to differences in victimization between students who fully participate and those who don't. 
+</p>
+
+
+```{r,tidy=T}
+#6.2
+#create function to calculate the mean difference of two groups
+mean.diff <- function(data) {
+  mean(data [1:187]) - mean(data[188:356])
+}
+mean.diff(Afterschool_data$Victim)
+
+#a)permute 100 times
+victim_permuted<- replicate(n=100, expr=sample(Afterschool_data$Victim))
+diffs <- apply(X = victim_permuted, MARGIN = 2, FUN = mean.diff)
+r<- length(diffs[abs(diffs)>= 1.3])
+p_value<- (r+1)/(100+1)
+cat("The p value for permuted 100 times is",p_value,". ")
+
+#b)500 times
+victim_permuted<- replicate(n=500, expr=sample(Afterschool_data$Victim))
+diffs <- apply(X = victim_permuted, MARGIN = 2, FUN = mean.diff)
+r<- length(diffs[abs(diffs)>= 1.3])
+p_value<- (r+1)/(500+1)
+cat("The p value for permuted 500 times is",p_value,". ")
+
+#c)1000 times
+victim_permuted<- replicate(n=1000, expr=sample(Afterschool_data$Victim))
+diffs <- apply(X = victim_permuted, MARGIN = 2, FUN = mean.diff)
+r<- length(diffs[abs(diffs)>= 1.3])
+p_value<- (r+1)/(1000+1)
+cat("The p value for permuted 1000 times is",p_value,". ")
+
+#d)5000 times
+victim_permuted<- replicate(n=5000, expr=sample(Afterschool_data$Victim))
+diffs <- apply(X = victim_permuted, MARGIN = 2, FUN = mean.diff)
+r<- length(diffs[abs(diffs)>= 1.3])
+p_value <- (r+1)/(5000+1)
+cat("The p value for permuted 5000 times is",p_value,". ")
+
+#e)10000 times
+victim_permuted<- replicate(n=10000, expr=sample(Afterschool_data$Victim))
+diffs <- apply(X = victim_permuted, MARGIN = 2, FUN = mean.diff)
+r<- length(diffs[abs(diffs)>= 1.3])
+p_value<- (r+1)/(10000+1)
+cat("The p value for permuted 10000 times is",p_value,". ")
+
+#f)100,000 times
+victim_permuted<- replicate(n=100000, expr=sample(Afterschool_data$Victim))
+diffs <- apply(X = victim_permuted, MARGIN = 2, FUN = mean.diff)
+r<- length(diffs[abs(diffs)>= 1.3])
+p_value<- (r+1)/(100000+1)
+cat("The p value for permuted 100000 times is",p_value, ". ")
+```
+<p align="left>
+The p-value for the randomization test decreases when the times of permutation increases from 100 times to 1000 times, and then the p-value increases as the permutation times keep increasing. The permutation times we choose for the randomization test could possibly affect the conclusion.Therefore, my suggestion is that we need to find the appropriate times of permutation for our randomization test. It is not neccessarily always better to randomize a large amount of times.
+</p>
